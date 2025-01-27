@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">Photonfy Revival</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string-array name="formularios">
+        <item>GET_INTEGRATION_TIME</item>
+        <item>GET_GAIN</item>
+        <item>GET_RAW_SPECTRUM</item>
+        <item>STOP_STREAMING</item>
+        <item>GET_TRANSFER_FUNCTION</item>
+        <item>GET_DEFAULT_TRANSFER_FUNCTION</item>
+        <item>RELOAD_DEFAULT_TRANSFER_FUNCTION</item>
+        <item>GET_WAVELENGTH_CALIBRATION</item>
+        <item>GET_DEFAULT_WAVELENGTH_CALIBRATION</item>
+        <item>SET_DEFAULT_TRANSFER_FUNCTION</item>
+        <item>RELOAD_DEFAULT_WAVELENGTH_CALIBRATION</item>
+        <item>GET_DEFAULT_WAVELENGTH_CALIBRATION</item>
+        <item>CALIBRATE_BACKGROUND</item>
+        <item>GET_BACKGROUND_CALIBRATIONS</item>
+        <item>CALIBRATE_DEFAULT_BACKGROUND</item>
+        <item>GET_DEFAULT_BACKGROUND_CALIBRATIONS</item>
+        <item>RELOAD_DEFAULT_BACKGROUND_CALIBRATIONS</item>
+        <item>GET_LUX_CALIBRATION</item>
+        <item>GET_DEFAULT_LUX_CALIBRATION</item>
+        <item>RELOAD_DEFAULT_LUX_CALIBRATION</item>
+        <item>GET_VIDEO_SAMPLE_RATE</item>
+        <item>GET_TIME</item>
+        <item>GET_DEVICE_STATE</item>
+        <item>GET_DEVICE_INFO</item>
+        <item>SET_SOFT_FACTORY_RESET</item>
+        <item>SET_HARD_FACTORY_RESET</item>
+        <item>GET_BACKGROUND_COEFFICIENTS</item>
+        <item>GET_DEFAULT_BACKGROUND_COEFFICIENTS</item>
+        <item>RELOAD_DEFAULT_BACKGROUND_COEFFICIENTS</item>
+        <item>GET_FLICKERING</item>
+        <item>SET_TIME</item>
+        <item>SET_INTEGRATION_TIME</item>
+        <item>SET_GAIN</item>
+        <item>SET_WAVELENGTH_CALIBRATION</item>
+        <item>SET_LUX_CALIBRATION</item>
+        <item>SET_BLUETOOTH_NAME</item>
+        <item>SET_DEFAULT_LUX_CALIBRATION</item>
+        <item>SET_VIDEO_SAMPLE_RATE</item>
+        <item>SET_BACKGROUND</item>
+        <item>SET_DEFAULT_BACKGROUND</item>
+    </string-array>
+</resources>
