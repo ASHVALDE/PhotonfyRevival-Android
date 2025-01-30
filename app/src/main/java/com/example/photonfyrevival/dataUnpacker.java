@@ -1,6 +1,8 @@
 package com.example.photonfyrevival;
 
 
+import android.util.Log;
+
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.primitives.Bytes;
 
 import java.nio.ByteBuffer;
@@ -43,6 +45,7 @@ public class dataUnpacker {
             UnpackedData.add(ByteBuffer.wrap(x).getFloat());
 
         }
+
         return UnpackedData;
     }
 
@@ -157,6 +160,16 @@ public class dataUnpacker {
     public static String GET_VIDEO_SAMPLE_RATE(List<Byte> payload){
         float SampleRate= ByteBuffer.wrap(new byte[]{payload.get(0), payload.get(1), payload.get(2), payload.get(3)}).getFloat();
         return "SampleRate: "+SampleRate;
+    }
+
+    public static String GET_BACKGROUND_COEFFICIENTS(List<Byte> payload) {
+        String response = "";
+        Stack<Float> UnpackedData = new Stack<Float>();
+        for (int i = 0; i < payload.size(); i=i+4) {
+            byte[] x = {payload.get(i),payload.get(i+1),payload.get(i+2),payload.get(i+3)};
+            UnpackedData.add(ByteBuffer.wrap(x).getFloat());
+        }
+        return UnpackedData.toString();
     }
 
 }

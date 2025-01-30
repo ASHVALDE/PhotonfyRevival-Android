@@ -155,10 +155,10 @@ public class dataReceiver extends Thread{
 
             if(x.UnpackedResponse!= null){
                 // Aqui tambien deberia mandar la foto
-
                 dataPackage finalX = x;
                 view.post(new Runnable() {
                     public void run() {
+
                         outputBox.setText(finalX.UnpackedResponse);
                     }
                 });
