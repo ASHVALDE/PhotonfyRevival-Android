@@ -1,4 +1,4 @@
-package com.example.photonfyrevival;
+package com.github.ashvalde.photonfy;
 
 import org.junit.Test;
 

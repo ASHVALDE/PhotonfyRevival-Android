@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./home.css">
+    
+</head>
+<body>
+    <h1 id="title">Photonfy</h1>
+    <div class="flexMain">
+      <img src="Resources/device.png" style="margin-top: 10%; width: 100%;">
+      <div class="conectionPanel">
+        <p style="text-transform: lowercase;" > Seleccione el photonfy en la lista de dispositivos bluetooth vinculados:</p>
+        <select name="" id="btDevices">
+        </select>
+        <button onclick="generateConnection()">Conectar</button>
+      </div>
+    </div>
+    
+    
+
+</body>
+<script src="script.js"></script>
+<script>
+  function generateConnection() {
+    let val = document.getElementById("btDevices").value
+    Android.generateConnection(val)
+  }
+
+  function loadDevices() {
+      let devices = JSON.parse(Android.getPairedDevices());
+      let spinner = document.getElementById("btDevices")
+      Object.keys(devices).forEach((k)=>{
+        var opt = document.createElement('option');
+        opt.value = devices[k].address;
+        opt.innerHTML = devices[k].name+" | "+devices[k].address;
+        spinner.appendChild(opt);
+      })
+
+  }
+  function onSocketConnected() {
+    Android.loadMainMenu()
+    }
+
+  </script>
+</html>

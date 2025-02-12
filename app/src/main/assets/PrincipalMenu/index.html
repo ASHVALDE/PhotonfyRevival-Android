@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photonfy</title>
+  <link rel="stylesheet" href="../home.css" />
+  <style>
+    /* Estilos básicos para el formulario */
+    .form-container {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    .form-container label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .form-container input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .form-container button {
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .form-container button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">Photonfy</h1>
+  <p id="debug"></p>
+  <div class="flexMain">
+    <select id="commandSelect">
+      <option value="">Selecciona un comando</option>
+      <option value="UPDATE_INTEGRATION_TIME">UPDATE_INTEGRATION_TIME</option>
+      <option value="UPDATE_GAIN">UPDATE_GAIN</option>
+      <option value="UPDATE_TRANSFER_FUNCTION">UPDATE_TRANSFER_FUNCTION</option>
+      <option value="UPDATE_DEFAULT_TRANSFER_FUNCTION">UPDATE_DEFAULT_TRANSFER_FUNCTION</option>
+      <option value="UPDATE_WAVELENGTH_CALIBRATION">UPDATE_WAVELENGTH_CALIBRATION</option>
+      <option value="UPDATE_DEFAULT_WAVELENGTH_CALIBRATION">UPDATE_DEFAULT_WAVELENGTH_CALIBRATION</option>
+      <option value="UPDATE_BACKGROUND_CALIBRATIONS">UPDATE_BACKGROUND_CALIBRATIONS</option>
+      <option value="UPDATE_DEFAULT_BACKGROUND_CALIBRATIONS">UPDATE_DEFAULT_BACKGROUND_CALIBRATIONS</option>
+      <option value="UPDATE_BACKGROUND_COEFFICIENTS">UPDATE_BACKGROUND_COEFFICIENTS</option>
+      <option value="UPDATE_DEFAULT_BACKGROUND_COEFFICIENTS">UPDATE_DEFAULT_BACKGROUND_COEFFICIENTS</option>
+      <option value="UPDATE_LUX_CALIBRATION">UPDATE_LUX_CALIBRATION</option>
+      <option value="UPDATE_DEFAULT_LUX_CALIBRATION">UPDATE_DEFAULT_LUX_CALIBRATION</option>
+      <option value="UPDATE_VIDEO_SAMPLE_RATE">UPDATE_VIDEO_SAMPLE_RATE</option>
+      <option value="UPDATE_TIME">UPDATE_TIME</option>
+      <option value="GET_RAW_SPECTRUM">GET_RAW_SPECTRUM</option>
+      <option value="GET_DEVICE_STATE">GET_DEVICE_STATE</option>
+
+      <option value="CALIBRATE_BACKGROUND">CALIBRATE_BACKGROUND</option>
+      <option value="CALIBRATE_DEFAULT_BACKGROUND">CALIBRATE_DEFAULT_BACKGROUND</option>
+      <option value="RELOAD_DEFAULT_WAVELENGTH_CALIBRATION">RELOAD_DEFAULT_WAVELENGTH_CALIBRATION</option>
+      <option value="RELOAD_DEFAULT_BACKGROUND_CALIBRATIONS">RELOAD_DEFAULT_BACKGROUND_CALIBRATIONS</option>
+      <option value="RELOAD_DEFAULT_LUX_CALIBRATION">RELOAD_DEFAULT_LUX_CALIBRATION</option>
+      <option value="RELOAD_DEFAULT_BACKGROUND_COEFFICIENTS">RELOAD_DEFAULT_BACKGROUND_COEFFICIENTS</option>
+      <option value="RELOAD_DEFAULT_TRANSFER_FUNCTION">RELOAD_DEFAULT_TRANSFER_FUNCTION</option>
+
+      <option value="GET_FLICKERING">GET_FLICKERING</option>
+      <option value="SET_BLUETOOTH_NAME">SET_BLUETOOTH_NAME</option>
+      <option value="END_INITIALIZATION">END_INITIALIZATION</option>
+      <option value="SET_SOFT_FACTORY_RESET">SET_SOFT_FACTORY_RESET</option>
+      <option value="SET_HARD_FACTORY_RESET">SET_HARD_FACTORY_RESET</option>
+    </select>
+    <!-- Contenedor para el formulario dinámico -->
+    <div id="formContainer" class="form-container"></div>
+    <button onClick="sendCommand()">Enviar Comando</button>
+  </div>
+
+  <script>
+    const commandSelect = document.getElementById("commandSelect");
+
+    function sendCommand(){
+      let datos = []
+      Array.from(document.getElementsByTagName('input')).forEach((campo, index) => {
+          datos.push(campo.value)
+      });
+      Android.sendCommand(commandSelect.value,JSON.stringify(datos))
+    }
+    const formContainer = document.getElementById("formContainer");
+
+    // Función para generar el HTML del formulario a partir de un arreglo de campos
+    function getValuesFromAndroid(respuesta){
+      //document.getElementById("debug").innerHTML = document.getElementsByTagName('input').length
+      Array.from(document.getElementsByTagName('input')).forEach((campo, index) => {
+          campo.value = respuesta.Values[index]; 
+          //document.getElementById("debug").innerHTML = "sapo";
+      });
+    }
+
+    function generateForm(fields) {
+      let formHTML = '<form>';
+      fields.forEach(field => {
+        formHTML += `
+          <label for="${field.name}">${field.label}:</label>
+          <input type="${field.type}" id="${field.name}" name="${field.name}" placeholder="${field.placeholder}" required>
+        `;
+      });
+      formHTML += '</form>';
+      return formHTML;
+    }
+
+    // Evento "change" para detectar el comando seleccionado y generar los campos correspondientes
+    commandSelect.addEventListener("change", () => {
+      const selectedCommand = commandSelect.value;
+      let fields = [];
+
+      Android.getFieldsFromSpectrometer(selectedCommand)
+
+      // Se genera dinámicamente la lista de campos en función del comando seleccionado
+      switch (selectedCommand) {
+        case "UPDATE_TRANSFER_FUNCTION":
+        case "UPDATE_DEFAULT_TRANSFER_FUNCTION":
+          // Se requieren 81 campos para los 81 valores flotantes (factores de corrección)
+          for (let i = 0; i < 81; i++) {
+            fields.push({
+              name: "tf" + (i + 1),
+              type: "number",
+              label: `Factor de Corrección TF[${i + 1}]`,
+              placeholder: "Ingrese un valor flotante"
+            });
+          }
+          break;
+        case "UPDATE_WAVELENGTH_CALIBRATION":
+        case "UPDATE_DEFAULT_WAVELENGTH_CALIBRATION":
+          // Se requieren 6 coeficientes para la conversión de píxel a longitud de onda
+          fields.push({ name: "coef_a0", type: "number", label: "Coeficiente a0 (Offset)", placeholder: "Valor de desplazamiento" });
+          fields.push({ name: "coef_a1", type: "number", label: "Coeficiente a1 (Lineal)", placeholder: "Valor para término lineal" });
+          fields.push({ name: "coef_a2", type: "number", label: "Coeficiente a2 (Cuadrático)", placeholder: "Valor para término cuadrático" });
+          fields.push({ name: "coef_a3", type: "number", label: "Coeficiente a3 (Cúbico)", placeholder: "Valor para término cúbico" });
+          fields.push({ name: "coef_a4", type: "number", label: "Coeficiente a4 (Cuártico)", placeholder: "Valor para término cuártico" });
+          fields.push({ name: "coef_a5", type: "number", label: "Coeficiente a5 (Quintico)", placeholder: "Valor para término quíntico" });
+          break;
+        case "UPDATE_BACKGROUND_CALIBRATIONS":
+          // Valores requeridos para actualizar la calibración de fondo
+          fields.push({ name: "background_counts", type: "number", label: "Recuento de Fondo (Counts)", placeholder: "Valor medido en ausencia de luz" });
+          fields.push({ name: "integration_time", type: "number", label: "Tiempo de Integración (ms)", placeholder: "Tiempo en milisegundos" });
+          fields.push({ name: "temperature", type: "number", label: "Temperatura (°C)", placeholder: "Temperatura actual del sensor" });
+          break;
+        case "UPDATE_DEFAULT_BACKGROUND_CALIBRATIONS":
+          // Valores para la calibración de fondo por defecto
+          fields.push({ name: "default_background_counts", type: "number", label: "Recuento de Fondo por Defecto (Counts)", placeholder: "Valor medido predeterminado" });
+          fields.push({ name: "default_integration_time", type: "number", label: "Tiempo de Integración por Defecto (ms)", placeholder: "Tiempo en milisegundos" });
+          fields.push({ name: "default_temperature", type: "number", label: "Temperatura por Defecto (°C)", placeholder: "Temperatura predeterminada" });
+          break;
+        case "UPDATE_BACKGROUND_COEFFICIENTS":
+        case "UPDATE_DEFAULT_BACKGROUND_COEFFICIENTS":
+          // Se requieren 42 campos: 14 grupos de 3 coeficientes (a, b y c)
+          for (let group = 1; group <= 14; group++) {
+            fields.push({
+              name: `bg_a${group}`,
+              type: "number",
+              label: `Coeficiente a (Grupo ${group}) – Término Cuadrático`,
+              placeholder: "Valor de a"
+            });
+            fields.push({
+              name: `bg_b${group}`,
+              type: "number",
+              label: `Coeficiente b (Grupo ${group}) – Término Lineal`,
+              placeholder: "Valor de b"
+            });
+            fields.push({
+              name: `bg_c${group}`,
+              type: "number",
+              label: `Coeficiente c (Grupo ${group}) – Término Constante`,
+              placeholder: "Valor de c"
+            });
+          }
+          break;
+
+        case "UPDATE_INTEGRATION_TIME":
+          fields.push({ name: "time", type: "number", label: "Tiempo de Integración (ms)", placeholder: "Valor entre 5 y 7000 ms" });
+          break;
+        case "UPDATE_GAIN":
+          fields.push({ name: "activate", type: "number", label: "Activar Ganancia", placeholder: "0 para desactivar, 1 para activar" });
+          break;
+        case "UPDATE_LUX_CALIBRATION":
+        case "UPDATE_DEFAULT_LUX_CALIBRATION":
+          fields.push({ name: "lux", type: "number", label: "Valor de Calibración de Lux", placeholder: "Valor flotante de calibración" });
+          break;
+        case "UPDATE_VIDEO_SAMPLE_RATE":
+          fields.push({ name: "rate", type: "number", label: "Tasa de Muestreo de Video (segundos)", placeholder: "Intervalo entre frames" });
+          break;
+        case "UPDATE_TIME":
+          fields.push({ name: "hours", type: "number", label: "Horas (0-23)", placeholder: "Hora actual en UTC - 2 Digitos" });
+          fields.push({ name: "minutes", type: "number", label: "Minutos (0-59)", placeholder: "Minutos actuales - 2 Digitos" });
+          fields.push({ name: "seconds", type: "number", label: "Segundos (0-59)", placeholder: "Segundos actuales - 2 Digitos" });
+          fields.push({ name: "day", type: "number", label: "Día (1-31)", placeholder: "Día del mes - 2 Digitos" });
+          fields.push({ name: "month", type: "number", label: "Mes (1-12)", placeholder: "Mes del año - 2 Digitos" });
+          fields.push({ name: "year", type: "number", label: "Año  2000 - 4 Digitos"});
+          break;
+        case "SET_BLUETOOTH_NAME":
+          fields.push({ name: "name", type: "text", label: "Nombre del Bluetooth", placeholder: "Nombre del dispositivo (máx 24 caracteres)" });
+          break;
+        // no requieren campos adicionales.
+        default:
+          fields = [];
+          break;
+      }
+
+      // Mapeo de comandos a una descripción ampliada para que el usuario sepa qué hace cada función
+      const commandDescriptions = {
+        RELOAD_DEFAULT_TRANSFER_FUNCTION: "Actualiza el valor del transfer function con los valores por defecto.",
+
+        UPDATE_INTEGRATION_TIME: "Actualiza el tiempo de integración del sensor. Este valor determina el tiempo durante el cual el sensor captura la luz. (Rango esperado: 5 a 7000 ms).",
+        UPDATE_GAIN: "Actualiza el estado de la ganancia. Use 0 para desactivar y 1 para activar el amplificador de la señal.",
+        UPDATE_TRANSFER_FUNCTION: "Actualiza la función de transferencia del espectrómetro. Se requieren 81 valores flotantes que se utilizan para convertir las cuentas de píxel en unidades de mW/nm o µW/nm.",
+        UPDATE_DEFAULT_TRANSFER_FUNCTION: "Actualiza la función de transferencia por defecto del espectrómetro. Ingrese 81 valores flotantes para la calibración predeterminada.",
+        UPDATE_WAVELENGTH_CALIBRATION: "Actualiza la calibración de longitud de onda. Ingrese 6 coeficientes que se utilizarán en la fórmula: nm = a0 + a1*px + a2*px² + a3*px³ + a4*px⁴ + a5*px⁵.",
+        UPDATE_DEFAULT_WAVELENGTH_CALIBRATION: "Actualiza la calibración de longitud de onda por defecto. Ingrese 6 coeficientes para el cálculo de la longitud de onda (valores predeterminados).",
+        UPDATE_BACKGROUND_CALIBRATIONS: "Actualiza la calibración de fondo. Proporcione los valores medidos para el recuento de fondo, el tiempo de integración y la temperatura actual del sensor.",
+        UPDATE_DEFAULT_BACKGROUND_CALIBRATIONS: "Actualiza la calibración de fondo por defecto. Proporcione los valores predeterminados para el recuento de fondo, el tiempo de integración y la temperatura.",
+        UPDATE_BACKGROUND_COEFFICIENTS: "Actualiza los coeficientes de fondo. Se requieren 42 valores flotantes organizados en 14 grupos de 3 coeficientes (a, b y c) que permiten modelar el comportamiento del fondo en función del tiempo de integración.",
+        UPDATE_DEFAULT_BACKGROUND_COEFFICIENTS: "Actualiza los coeficientes de fondo por defecto. Ingrese 42 valores flotantes en 14 grupos de 3 coeficientes (a, b y c) para la calibración predeterminada.",
+        UPDATE_LUX_CALIBRATION: "Actualiza la calibración de lux. Ingrese un valor flotante que se usará para convertir la señal del sensor a lux.",
+        UPDATE_DEFAULT_LUX_CALIBRATION: "Actualiza la calibración de lux por defecto. Ingrese un valor flotante predeterminado para la conversión a lux.",
+        UPDATE_VIDEO_SAMPLE_RATE: "Actualiza la tasa de muestreo del video. Este valor (en segundos) determina el intervalo entre cada frame de video.",
+        UPDATE_TIME: "Actualiza la hora del dispositivo. Los valores deben ingresarse en formato UTC-0. El año se indica como el valor de 'año - 2000' (por ejemplo, 23 para 2023).",
+        SET_BLUETOOTH_NAME: "Actualiza el nombre del dispositivo Bluetooth."
+      };
+
+      let description = commandDescriptions[selectedCommand] || "No se requieren datos adicionales para este comando.";
+      let html = `<p><strong>Descripción:</strong> ${description}</p>`;
+      if (fields.length > 0) {
+        html += generateForm(fields);
+      } else {
+        html += "<p>No se requieren datos adicionales para este comando.</p>";
+      }
+      formContainer.innerHTML = html;
+    });
+  </script>
+</body>
+</html>

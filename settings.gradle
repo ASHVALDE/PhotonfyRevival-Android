@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Photonfy Revival"
+rootProject.name = "Photonfy"
 include ':app'
